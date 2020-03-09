@@ -6,16 +6,17 @@ import soundClip from './yisell_sound_2008030716560441118_88011.mp3'
 
 
 //LAYOUT
-const APP_LAYOUT = "well col-xs-6 col-xs-offset-1 col-md-8 col-md-offset-2 row App";
-const PAD_LAYOUT = "row well col-xs-12 col-md-6";
-const CONTROL_LAYOUT = "well row col-xs-12 col-md-5 col-md-offset-1";
+const APP_LAYOUT = "well col-xs-10 col-xs-offset-1 col-md-8 col-md-offset-2 row App";
+const PAD_LAYOUT = "row well col-xs-10 col-xs-offset-1 col-md-5 col-md-offset-1 col-lg-5 col-lg-offset-1";
+const CONTROL_LAYOUT = "well row col-xs-10 col-xs-offset-1 col-md-4 col-md-offset-1 col-md-offset-1 col-lg-4 col-lg-offset-1";
 const SINGLEBTN_LAYOUT = "col-xs-4 col-md-4";
-const POWER_LAYOUT = "row col-xs-4 col-xs-offset-4 col-md-4 col-md-offset-4";
+const POWER_LAYOUT = "row col-xs-10 col-xs-offset-1 col-md-4 col-md-offset-4";
 const POWER_LOGO = "col-xs-12 col-md-12";
 const POWER_BTN = "col-xs-12 col-md-12";
 const VOLUME_LAYOUT = "col-xs-12 col-md-12";
 const DISPLAY_LAYOUT = "col-xs-10 col-xs-offset-1 col-md-8 col-md-offset-2";
 
+//准备好电子鼓的按钮，确定对应的键盘按键、声音文件、标识符和描述
 const PAD =[
   {padKey: 81, padSrc: soundClip, padText: "Q", padDescribe: "QClip"}, 
   {padKey: 87, padSrc: soundClip, padText: "W", padDescribe: "WClip"}, 
@@ -28,6 +29,7 @@ const PAD =[
   {padKey: 67, padSrc: soundClip, padText: "C", padDescribe: "CClip"}
 ];
 
+//单个案件的组件模板
 class SingleBtn extends React.Component {
   constructor(props){
     super(props);
@@ -36,17 +38,21 @@ class SingleBtn extends React.Component {
   }
   
   drumPadHandle() {
+    //先检查电源开关
     if (this.props.powerState === "on") {
+      //电源打开的情况下，触发该函数时，引用并播放对应的音频
       const sound = document.getElementById(this.props.padText);
+      //设置播放的音量大小
       sound.volume = this.props.volume;
       sound.currentTime = 0;
       sound.play();
       //console.log(sound);
       //console.log(event.target.parentNode.firstChild);
+      //调用自定义函数在显示屏上显示按下的按钮
       this.props.setDisplay(this.props.padText);
     }
   }
-
+  //使用键盘时触发函数
   pressKey(event) {
     if (this.props.powerState === "on") {
       if (event.key === this.props.padText) {
@@ -54,7 +60,7 @@ class SingleBtn extends React.Component {
       }
     }
   }
-
+  //监听键盘按下事件
   componentDidMount() {
     document.addEventListener("keydown", this.pressKey);
   }
@@ -73,6 +79,7 @@ class SingleBtn extends React.Component {
   }
 }
 
+//由单个按键组合成的键盘组件
 class DrumPad extends React.Component {
 /*   constructor(props){
     super(props);
@@ -95,7 +102,7 @@ class DrumPad extends React.Component {
     );
   }
 }
-
+//电源开关
 class PowerBtn extends React.Component {
   render() {
     return (
@@ -108,7 +115,7 @@ class PowerBtn extends React.Component {
     );
   }
 }
-
+//音量开关
 class VolumeControl extends React.Component {
 /*   constructor(props){
     super(props);
@@ -122,7 +129,7 @@ class VolumeControl extends React.Component {
     );
   }
 }
-
+//显示屏
 class Display extends React.Component {
 /*   constructor(props) {
     super(props);
@@ -150,7 +157,7 @@ class App extends React.Component {
     this.powerControl = this.powerControl.bind(this);
     this.setDisplay =this.setDisplay.bind(this);
   } 
-
+  //处理电源开关
   powerControl(event) {
     var amountProp = event.target.parentNode.getBoundingClientRect();
     var length = amountProp.right - amountProp.left;
@@ -167,11 +174,14 @@ class App extends React.Component {
       event.target.style.left = 0;
     }
   }
-
+  //处理音量调整
   volumeChange(event) {
     if (this.state.powerState === "on") {
+      //获取对应元素的上下左右边的XY值
       var amountVolume = event.target.getBoundingClientRect();
+      //计算音量条上鼠标点击的位置坐标所占长度的百分比
       var volume = (event.clientX - amountVolume.left) / (amountVolume.right - amountVolume.left);
+      //使浮标的位置设置为用户点击的位置
       event.target.firstChild.style.left = event.clientX - amountVolume.left + "px";
       this.setState({
         volumeSet: volume
@@ -189,12 +199,14 @@ class App extends React.Component {
     return (
       <div className="row">
         <div id="drum-machine" className={APP_LAYOUT}>
-        <h1>Drum Machine</h1>
-          <DrumPad setDisplay={this.setDisplay} pad={this.state.pad} powerState={this.state.powerState} volume={this.state.volumeSet} />
-          <div id="control-panel" className={CONTROL_LAYOUT}>
-            <PowerBtn btn={this.powerControl}/>
-            <VolumeControl handleChange={this.volumeChange} />
-            <Display text={this.state.show}/>
+          <h1>Drum Machine</h1>
+          <div id="drum-control-wrapper" className="row">
+            <DrumPad setDisplay={this.setDisplay} pad={this.state.pad} powerState={this.state.powerState} volume={this.state.volumeSet} />
+            <div id="control-panel" className={CONTROL_LAYOUT}>
+              <PowerBtn btn={this.powerControl}/>
+              <VolumeControl handleChange={this.volumeChange} />
+              <Display text={this.state.show}/>
+            </div>
           </div>
         </div>
       </div>
